@@ -6,7 +6,9 @@ DEFAULT_HEADERS = {
 }
 
 
-def _first_non_empty(mapping: Dict[str, str], keys: Iterable[str]) -> Optional[str]:
+def _first_non_empty(
+        mapping: Dict[str, str],
+        keys: Iterable[str]) -> Optional[str]:
     for key in keys:
         value = mapping.get(key)
         if value:
@@ -14,7 +16,10 @@ def _first_non_empty(mapping: Dict[str, str], keys: Iterable[str]) -> Optional[s
     return None
 
 
-def build_address_from_components(address_obj: Dict[str, str], include: Optional[List[str]] = None) -> Optional[str]:
+def build_address_from_components(
+        address_obj: Dict[str, str],
+        include: Optional[List[str]] = None
+        ) -> Optional[str]:
 
     if not address_obj:
         return None

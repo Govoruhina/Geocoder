@@ -17,8 +17,10 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     class _StubClient:
         def clean(self, *_args, **_kwargs):
-            raise RuntimeError("Библиотека dadata не установлена — нормализация адреса недоступна")
-
+            raise RuntimeError(
+                "Библиотека dadata не установлена "
+                "— нормализация адреса недоступна"
+            )
     _client = _StubClient()
 
 
@@ -90,7 +92,6 @@ def _try_parse_coordinates(text: str) -> Optional[Tuple[float, float]]:
     return lat, lon
 
 
-
 async def handle_free_query(free_text: str) -> None:
     raw = sanitize_input(free_text)
     if not raw:
@@ -106,25 +107,35 @@ async def handle_free_query(free_text: str) -> None:
 
     # не кирилица – некорректно
     if not _contains_cyrillic(raw):
-        print("Некорректный ввод. Введите адрес на русском языке или две координаты через пробел/запятую.")
+        print(
+            "Некорректный ввод. "
+            "Введите адрес на русском языке "
+            "или две координаты через пробел/запятую."
+            )
         return
 
     # только одно слово или меньше 5 символов
     words = [w for w in re.split(r"[,\s]+", raw) if w]
     if len(words) < 2 or len(raw) < 5:
-        print("Слишком короткий адрес. Уточните, например: 'Город, улица дом'.")
+        print(
+            "Слишком короткий адрес. "
+            "Уточните, например: 'Город, улица дом'."
+            )
         return
 
     normalized = _normalize_free_text(raw)
     if not normalized:
-        print("Не удалось распознать адрес. Попробуйте формат: 'Город, улица дом'.")
+        print(
+            "Не удалось распознать адрес. "
+            "Попробуйте формат: 'Город, улица дом'."
+            )
         return
 
     await response.send_request(normalized)
 
 
-
-async def parse_output_address(input_address: str, output_address: Dict) -> None:
+async def parse_output_address(
+        input_address: str, output_address: Dict) -> None:
     if not output_address:
         print("Пустой ответ от сервера геокодирования")
         return
@@ -160,24 +171,31 @@ async def parse_output_address(input_address: str, output_address: Dict) -> None
         return
 
     country = (address_meta.get("country") or "").lower()
-    full_without_coords_parts = [p for p in [region, city, street_house, postcode] if p]
+    full_without_coords_parts = [
+        p for p in [region, city, street_house, postcode] if p]
     full_without_coords = ", ".join(full_without_coords_parts)
 
     if country and "россия" not in country:
         print("Адрес находится вне пределов России")
         return
-    if not country and ("россия" not in (output_address.get("display_name") or "")):
+    if not country and (
+        "россия" not in (
+            output_address.get("display_name")
+            or "")
+            ):
         print("Адрес находится вне пределов России")
         return
 
-    # Сохранение в БД 
+    # Сохранение в БД
     try:
-        await add_new_address(input_address, full_without_coords, latitude, longitude)
+        await add_new_address(
+            input_address, full_without_coords, latitude, longitude)
     except Exception as exc:
         print(f"[БД] Не удалось сохранить адрес: {exc}")
 
-    formatted_parts = full_without_coords_parts + [str(latitude), str(longitude)]
+    formatted_parts = (
+        full_without_coords_parts + [str(latitude), str(longitude)]
+    )
     formatted = ", ".join(formatted_parts)
 
     print(f"Полный адрес: {formatted}")
-

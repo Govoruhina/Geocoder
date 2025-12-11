@@ -2,17 +2,17 @@ from typing import Optional
 
 try:
     from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-    from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+    from sqlalchemy.ext.asyncio import (AsyncAttrs,
+                                        async_sessionmaker,
+                                        create_async_engine)
 
     DB_URL = "sqlite+aiosqlite:///db.sqlite3"
 
     engine = create_async_engine(DB_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
-
     class Base(AsyncAttrs, DeclarativeBase):
         pass
-
 
     class Address(Base):
         __tablename__ = "addresses"
@@ -23,15 +23,13 @@ try:
         latitude: Mapped[float] = mapped_column()
         longitude: Mapped[float] = mapped_column()
 
-
     async def init_db() -> None:
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
 
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     engine = None
     async_session = None  # type: ignore[assignment]
-
 
     class Address:
         def __init__(
@@ -46,7 +44,5 @@ except ModuleNotFoundError:
             self.latitude = latitude
             self.longitude = longitude
 
-
     async def init_db() -> None:  # type: ignore[empty-body]
-        """Заглушка инициализации БД в режиме без SQLAlchemy."""
         return None

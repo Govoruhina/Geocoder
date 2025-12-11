@@ -8,8 +8,8 @@ from Source import parsing
 from Source.database.models import init_db
 
 
-def ensure_dependencies_installed(requirements_file: Optional[str] = "requirements.txt") -> None:
-  
+def ensure_dependencies_installed(
+        requirements_file: Optional[str] = "requirements.txt") -> None:
     if not requirements_file:
         return
 
@@ -19,7 +19,9 @@ def ensure_dependencies_installed(requirements_file: Optional[str] = "requiremen
     try:
         with open(os.devnull, "wb") as devnull:
             subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "-r", requirements_file],
+                [sys.executable,
+                    "-m", "pip", "install", "-r",
+                    requirements_file],
                 stdout=devnull,
                 stderr=devnull,
             )
@@ -48,30 +50,6 @@ def show_help() -> None:
     )
 
 
-def show_examples() -> None:
-    """Выводит примеры запросов и ожидаемого результата."""
-    print(
-        """Пример 1 — поиск координат по адресу
-
-Ввод:
-    Екатеринбург, Белинского 86
-
-Вывод (примерно, формат JSON):
-    {
-        Широта: 56.7928003,
-        Долгота: 60.6165292,
-        Полный адрес: "86 Белинского улица; Екатеринбург; Свердловская область; 620089; Россия"
-    }
-
-
-Пример 2 — поиск по уже известным координатам
-
-Ввод:
-    56.8225650, 60.6177568
-"""
-    )
-
-
 async def handle_query(query: str) -> None:
     """Обрабатывает одну строку запроса: адрес или координаты."""
     await parsing.handle_free_query(query)
@@ -80,7 +58,9 @@ async def handle_query(query: str) -> None:
 async def interactive_mode() -> None:
     print("Введите 'exit' или 'выход' для завершения, '--help' для справки.")
 
-    prompt = "Введите адрес в свободной форме (например: 'Екатеринбург, Белинского 86' или '56.8225650, 60.6177568'): "
+    prompt = "Введите адрес в свободной форме"
+    "(например: 'Екатеринбург, Белинского 86' "
+    "или '56.8225650, 60.6177568'): "
 
     try:
         while True:
@@ -94,9 +74,6 @@ async def interactive_mode() -> None:
                 return
             if lower in ("--help", "-h"):
                 show_help()
-                continue
-            if lower == "--examples":
-                show_examples()
                 continue
 
             await handle_query(raw)
@@ -113,9 +90,6 @@ async def main() -> None:
 
         if lower in ("--help", "-h"):
             show_help()
-            return
-        if lower == "--examples":
-            show_examples()
             return
         if lower in ("exit", "выход"):
             print("Завершение работы.")

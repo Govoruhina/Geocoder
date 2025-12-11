@@ -8,7 +8,9 @@ from Source.database.requests import return_address_if_exist
 from Source.utils import DEFAULT_HEADERS, NOMINATIM_URL
 
 
-def _print_json_result(query: str, full_address: str, latitude: float, longitude: float) -> None:
+def _print_json_result(
+        query: str, full_address: str, latitude: float, longitude: float
+        ) -> None:
     """JSON результат"""
     payload = {
         "query": query,
@@ -22,7 +24,11 @@ def _print_json_result(query: str, full_address: str, latitude: float, longitude
 async def send_request(address: str) -> None:
     cached = await return_address_if_exist(address)
     if cached is not None:
-        _print_json_result(address, cached.full_address, cached.latitude, cached.longitude)
+        _print_json_result(
+            address,
+            cached.full_address,
+            cached.latitude,
+            cached.longitude)
         return
 
     params = {
@@ -34,13 +40,19 @@ async def send_request(address: str) -> None:
     }
 
     try:
-        response = requests.get(NOMINATIM_URL, params=params, headers=DEFAULT_HEADERS, timeout=10)
-    except Exception as exc: 
+        response = requests.get(
+            NOMINATIM_URL,
+            params=params,
+            headers=DEFAULT_HEADERS,
+            timeout=10)
+    except Exception as exc:
         print(f"Ошибка при обращении к сервису геокодирования: {exc}")
         return
 
     if not response.ok:
-        print(f"Сервис геокодирования вернул ошибку: HTTP {response.status_code}")
+        print(
+            f"Сервис геокодирования вернул ошибку: HTTP {response.status_code}"
+            )
         return
 
     try:
