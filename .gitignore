@@ -1,0 +1,37 @@
+# --- ОС и редакторы ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# --- Python-окружения ---
+venv/
+.venv/
+env/
+.env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Логи и временные файлы ---
+*.log
+*.tmp
+*.swp
+*.swo
+
+# --- Тесты / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Сборки/пакеты ---
+build/
+dist/
+*.egg-info/
+*.egg
+
+# --- Локальная БД и кэш проекта ---
+db.sqlite3
+
+# --- Разное ---
+*.orig
