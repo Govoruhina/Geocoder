@@ -5,6 +5,7 @@ try:
     from sqlalchemy.ext.asyncio import (AsyncAttrs,
                                         async_sessionmaker,
                                         create_async_engine)
+    from sqlalchemy import String, insert  # type: ignore
 
     DB_URL = "sqlite+aiosqlite:///db.sqlite3"
 
@@ -17,11 +18,10 @@ try:
     class Address(Base):
         __tablename__ = "addresses"
 
-        id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-        input_query: Mapped[str] = mapped_column(index=True)
-        full_address: Mapped[str] = mapped_column()
-        latitude: Mapped[float] = mapped_column()
-        longitude: Mapped[float] = mapped_column()
+        id: Mapped[int] = mapped_column(primary_key=True)
+        full_address: Mapped[str] = mapped_column(String, nullable=False)
+        latitude: Mapped[str] = mapped_column(String, nullable=False)
+        longitude: Mapped[str] = mapped_column(String, nullable=False)
 
     async def init_db() -> None:
         async with engine.begin() as connection:

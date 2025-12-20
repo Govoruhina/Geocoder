@@ -3,7 +3,7 @@ from typing import Optional
 from Source.database.models import async_session, Address
 
 try:
-    from sqlalchemy import select  # type: ignore
+    from sqlalchemy import select, insert # type: ignore
 except ModuleNotFoundError:
     select = None
 
@@ -14,34 +14,26 @@ async def _get_session():
     return async_session()
 
 
-async def return_address_if_exist(query: str) -> Optional[Address]:
-    session = await _get_session()
-    if session is None or select is None:
-        return None
-
-    async with session as s:
-        result = await s.execute(select(Address)
-                                 .where(Address.input_query == query)
-                                 .limit(1))
+async def return_address_if_exist(full_address: str) -> Optional[Address]:
+    async with async_session() as session:
+        stmt = select(Address).where(Address.full_address == full_address)
+        result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
 
-async def add_new_address(
-        input_query: str,
-        full_address: str,
-        lat: float, lon: float
-        ) -> None:
-    session = await _get_session()
-    if session is None:
-        return
+async def add_new_address(input_query: str,
+                          full_address: str,
+                          lat: str,
+                          lon: str) -> None:
+    """Сохраняем только нормализованный адрес и координаты.
 
-    async with session as s:
-        async with s.begin():
-            s.add(
-                Address(
-                    input_query=input_query,
-                    full_address=full_address,
-                    latitude=float(lat),
-                    longitude=float(lon),
-                )
-            )
+    input_query оставляем в сигнатуре для совместимости, но в БД не пишем.
+    """
+    async with async_session() as session:
+        stmt = insert(Address).values(
+            full_address=full_address,
+            latitude=lat,
+            longitude=lon,
+        )
+        await session.execute(stmt)
+        await session.commit()

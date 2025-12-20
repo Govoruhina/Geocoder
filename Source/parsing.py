@@ -1,3 +1,4 @@
+import os
 import json
 import re
 from typing import Dict, Optional, Tuple
@@ -6,22 +7,52 @@ from Source import response
 from Source.database.requests import add_new_address
 from Source.utils import build_address_from_components
 
+
+def _load_env(path: str = ".env") -> None:
+    """Простейшая загрузка переменных из .env в os.environ."""
+    if not os.path.exists(path):
+        return
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+    except OSError:
+        # Если .env не читается — просто игнорируем
+        return
+
+
+_load_env()
+
+
 CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
 
 try:
     from dadata import Dadata
-
-    _TOKEN = "a2c67eb60ada13b05220830b7ea4611ae28e7ab9"
-    _SECRET = "8236c69efae9d50b7c4b2c064ec863901424d4a5"
-    _client = Dadata(_TOKEN, _SECRET)
 except ModuleNotFoundError:  # pragma: no cover
-    class _StubClient:
-        def clean(self, *_args, **_kwargs):
-            raise RuntimeError(
-                "Библиотека dadata не установлена "
-                "— нормализация адреса недоступна"
-            )
-    _client = _StubClient()
+    Dadata = None
+
+
+def _make_dadata_client():
+    """Создаём клиента DaData, если есть токен/секрет и библиотека."""
+    token = os.getenv("DADATA_TOKEN", "").strip()
+    secret = os.getenv("DADATA_SECRET", "").strip()
+
+    if not (Dadata and token and secret):
+        # Нет токена/секрета или не установлена библиотека — просто не используем DaData
+        return None
+
+    return Dadata(token, secret)
+
+
+_client = _make_dadata_client()
 
 
 def _contains_cyrillic(text: str) -> bool:
@@ -30,11 +61,16 @@ def _contains_cyrillic(text: str) -> bool:
 
 def _clean_with_dadata(address: str) -> Optional[Dict]:
     """Обёртка над Dadata.clean: возвращает словарь или None при ошибке."""
+    if _client is None:
+        # Нормализация отключена — нет токена/библиотеки
+        return None
+
     try:
         return _client.clean("address", address)
     except Exception as exc:  # noqa: BLE001
         print(f"[Dadata] Не удалось нормализовать адрес: {exc}")
         return None
+
 
 
 def _build_normalized_string(cleaned: Dict) -> Optional[str]:
